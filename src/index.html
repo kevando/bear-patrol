@@ -1,0 +1,164 @@
+<html>
+
+<head>
+  <title>Bear Patrole</title>
+  <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+
+  <style>
+    #table_header th { cursor: pointer }
+    #table_header .ordered.asc::after { content: '▲' }
+    #table_header .ordered.desc::after { content: '▼' }
+  </style>
+
+</head>
+<body>
+
+  <img src="https://i.imgur.com/7TZz2Uu.png" width="200"/>
+
+
+
+  <!-- NEW SIGHTING INPUT FORM -->
+
+  <form action = "http://127.0.0.1:8081/sighting" method="POST" id="new_sighting">
+    <h3>Have you seen a bear?? Please report ANY bear sighting!</h3>
+    <table cellpadding="10" border="0" bgcolor="#EEEEEE">
+      <tr>
+        <td>
+          <p>What type of bear?</p>
+        </td>
+        <td>
+          <select name="bear_type" id="bear_type">
+            <option value="Grizzly">Grizzly</option>
+            <option value="Black">Black</option>
+            <option value="Panda">Panda</option>
+            <option value="Polar">Polar</option>
+            <option value="Possibly a dog">Possibly a dog</option>
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <p>How many bears?</p>
+        </td>
+        <td>
+          <select name="bear_num" id="bear_num">
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <p>Where were you?</p>
+        </td>
+        <td>
+          <input type="text" name="location_description" size="40" id="location_description">
+        </td>
+      </tr>
+      <tr><td><input type="submit" value="Submit Your Sighting" /></td></tr>
+
+    </table>
+    <br />
+  </form>
+
+
+  <hr />
+
+
+  <!-- BEAR SIGHTINGS -->
+  <h2>Recent Bear Sightings</h2>
+  <table id="sightings_table" border=1 cellpadding="5">
+    <tr id='table_header'>
+      <th name='created_at' class='ordered desc'>Date</th>
+      <th name='bear_type'>Bear Type</th>
+      <th name='bear_num'>Number of Bears</th>
+      <th name='location_description'>Location</th>
+    </tr>
+    <tbody id="sightings_table_body"></tbody>
+
+
+  </table>
+
+
+  <script>
+
+  // GLOBAL VARIABLES for returning sightings
+  var order_by = 'created_at'
+  var order_direction = 'desc'
+
+  // ON PAGE LOAD
+  $( document ).ready(function() {
+    console.log('dude')
+    fetchSightings()
+  })
+
+
+  // FORM SUBMITTED
+  $('#new_sighting').submit(function(event) {
+    // validate some stuff
+    if($('#bear_num').val() == 0 ) {
+      alert('Zero bears does not count as a bear sighting')
+      event.preventDefault()
+      return false
+    }
+
+    if($('#bear_type').val() == 'Possibly a dog' ) {
+      alert('Only bears please.')
+      event.preventDefault()
+      return false
+    }
+    if($('#location_description').val() == '' ) {
+      alert('Please tell us where you saw the bear')
+      event.preventDefault()
+      return false
+    }
+  })
+
+  // CHANGE SORT ORDER
+  $('#table_header th').click(function(event) {
+    $('#table_header th').removeClass('ordered asc desc')
+    var clickedName = $(this).attr('name')
+    console.log(clickedName)
+    if(clickedName == order_by) {
+      // then just toggle the order_direction
+      order_direction = order_direction == 'asc' ? 'desc' : 'asc'
+    } else {
+      // there is a new column to sort by
+      order_by = clickedName
+    }
+
+    // update table header sort indicator
+    $(this).addClass('ordered ' + order_direction)
+
+    // and finally, fetch new sightings
+    fetchSightings()
+  })
+
+
+  // QUERY DATABASE and RENDER SIGHTINGS
+  function fetchSightings() {
+    $.ajax({
+      type: "GET",
+      dataType: 'json',
+      crossDomain: true,
+      url: "http://127.0.0.1:8081/sighting/search"+'?order_by='+order_by+'&order_direction='+order_direction,
+
+    }).done(function(data) {
+      console.log('done', data)
+      $('#sightings_table_body').empty()
+      data.forEach(function(s) {
+        $('#sightings_table_body').append('<tr><td>'+s.created_at+'</td><td>'+s.bear_type+'</td><td>'+s.bear_num+'</td><td>'+s.location_description+'</td></td></tr>')
+      })
+      // $( ".result" ).html( data );
+    })
+  }
+</script>
+</body>
+</html>
