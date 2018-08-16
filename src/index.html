@@ -154,7 +154,7 @@
       console.log('done', data)
       $('#sightings_table_body').empty()
       data.forEach(function(s) {
-        $('#sightings_table_body').append('<tr><td>'+s.created_at+'</td><td>'+s.bear_type+'</td><td>'+s.bear_num+'</td><td>'+s.location_description+'</td></td></tr>')
+        $('#sightings_table_body').append('<tr><td><a target="_blank"href="http://127.0.0.1:8081/sighting/'+s.id+'">'+s.created_at+'</a></td><td>'+s.bear_type+'</td><td>'+s.bear_num+'</td><td>'+s.location_description+'</td></td></tr>')
       })
       // $( ".result" ).html( data );
     })
